@@ -1,0 +1,43 @@
+name: IPfacens Main CI
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  build:
+    env:
+      PIPENV_NO_INHERIT: 1
+      PIPENV_IGNORE_VIRTUALENVS: 1
+
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [ 3.8 ]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Install dependencies
+        run: |
+          pip install pipenv
+          pipenv sync --dev
+
+      - name: Test with pytest
+        run: |
+          pipenv run pytest . --cov=.
+
+      - name: Posting Coverage
+        env:
+          CODECOV_TOKEN: "Oi"
+        run: |
+          pipenv run codecov
+
+      - name: Auto-Merge Pull Request
+        uses: reitermarkus/automerge@v1.5.2
